@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>INCIDENT: 3:07 AM — Found Footage Horror</title>
+  <meta name="description" content="A found-footage psychological horror game. Survive the anomaly from 3:00 AM to 3:33 AM. Do not look through the peephole. Do not turn around." />
+  <meta property="og:title" content="INCIDENT: 3:07 AM" />
+  <meta property="og:description" content="Survive until dawn. Whatever is knocking, do not let it in." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&family=Creepster&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div id="game-container">
+    <canvas id="game-canvas"></canvas>
+
+    <!-- VHS / Camcorder Overlay Layer -->
+    <div id="camcorder-hud" class="camcorder-hud">
+      <!-- VHS Header -->
+      <div class="hud-top">
+        <div class="rec-badge">
+          <span class="rec-dot"></span>
+          <span class="rec-text">REC [SP]</span>
+        </div>
+        <div class="timecode" id="hud-timecode">03:00:00 AM</div>
+        <div class="battery-indicator">
+          <span class="battery-label">CAM BATT</span>
+          <div class="battery-shell">
+            <div class="battery-fill" id="battery-fill"></div>
+          </div>
+          <span class="battery-pct" id="battery-pct">100%</span>
+        </div>
+      </div>
+
+      <!-- Camcorder Center Reticle & Night Vision Indicator -->
+      <div class="hud-center">
+        <div class="cam-crosshair" id="cam-crosshair">
+          <div class="bracket top-left"></div>
+          <div class="bracket top-right"></div>
+          <div class="bracket bottom-left"></div>
+          <div class="bracket bottom-right"></div>
+          <div class="center-dot"></div>
+        </div>
+        <div class="night-vision-tag" id="night-vision-tag">NIGHT VISION [IR ON]</div>
+      </div>
+
+      <!-- VHS Footer Telemetry -->
+      <div class="hud-bottom">
+        <div class="bpm-meter">
+          <span class="heart-icon">♥</span>
+          <span class="bpm-value" id="bpm-value">72</span>
+          <span class="bpm-unit">BPM</span>
+          <div class="ecg-line" id="ecg-line"></div>
+        </div>
+        <div class="objective-tracker" id="objective-tracker">
+          <span class="obj-label">OBJECTIVE:</span>
+          <span class="obj-text" id="obj-text">Survive until 3:33 AM</span>
+        </div>
+        <div class="vhs-format">TDK HS-120 // AUTO-TRACKING</div>
+      </div>
+
+      <!-- Warning Banner (Don't turn around / Hide) -->
+      <div class="warning-banner" id="warning-banner">
+        <span class="warning-icon">⚠️</span>
+        <span class="warning-text" id="warning-text">DO NOT TURN AROUND</span>
+      </div>
+
+      <!-- Interaction Prompt -->
+      <div class="interact-prompt" id="interact-prompt">
+        <span class="interact-key">[E]</span>
+        <span class="interact-label" id="interact-label">Examine</span>
+      </div>
+    </div>
+
+    <!-- Fisheye Peephole Overlay Mode -->
+    <div id="peephole-overlay" class="peephole-overlay">
+      <div class="peephole-vignette"></div>
+      <div class="peephole-lens-reflection"></div>
+      <div class="peephole-instructions">PRESS [E] OR [ESC] TO STEP BACK FROM DOOR</div>
+    </div>
+
+    <!-- Subtitles / EBS Broadcast Subtitle -->
+    <div id="subtitle-box" class="subtitle-box"></div>
+
+    <!-- VHS Glitch & Static Layer -->
+    <div class="vhs-scanlines"></div>
+    <div class="vhs-noise" id="vhs-noise"></div>
+    <div class="vhs-glitch-layer" id="vhs-glitch-layer"></div>
+    <div class="frost-overlay" id="frost-overlay"></div>
+    <div class="jumpscare-flash" id="jumpscare-flash">
+      <div class="jumpscare-face" id="jumpscare-face"></div>
+    </div>
+
+    <!-- Start / Audio Unlock Modal -->
+    <div id="start-modal" class="start-modal">
+      <div class="modal-card">
+        <div class="game-tag">TAPE ARCHIVE // FILE #307</div>
+        <h1 class="game-title">INCIDENT: 3:07 AM</h1>
+        <p class="game-synopsis">
+          You are trapped inside Room 404 during a midnight paranormal containment breach.<br />
+          Survive from <strong>03:00 AM to 03:33 AM</strong>.
+        </p>
+        
+        <div class="rules-card">
+          <div class="rule-item">🔴 <strong>Emergency Broadcast:</strong> Keep lights off when anomalies prowl.</div>
+          <div class="rule-item">👁️ <strong>The Peephole:</strong> Inspect door knocks, but be ready to step back and lock the deadbolt.</div>
+          <div class="rule-item">❄️ <strong>Cold Breath:</strong> If you feel breathing on your neck, <em>DO NOT MOVE OR TURN AROUND</em>.</div>
+          <div class="rule-item">📹 <strong>Night Vision [V / F]:</strong> Some entities are invisible to the naked eye.</div>
+        </div>
+
+        <div class="controls-overview">
+          <span><strong>WASD</strong> Move</span>
+          <span><strong>Mouse</strong> Look</span>
+          <span><strong>Shift</strong> Sprint</span>
+          <span><strong>C / Ctrl</strong> Crouch / Muffle</span>
+          <span><strong>E</strong> Interact / Peephole</span>
+          <span><strong>F / V</strong> Camcorder Night Vision</span>
+        </div>
+
+        <button id="btn-start-game" class="btn-start">▶ PLAY TAPE (WEAR HEADPHONES)</button>
+      </div>
+    </div>
+
+    <!-- Death / Tape Corrupted Screen -->
+    <div id="death-modal" class="death-modal">
+      <div class="death-card">
+        <div class="death-title">SIGNAL LOST // TAPE CORRUPTED</div>
+        <div class="death-cause" id="death-cause">YOU LOOKED AT IT.</div>
+        <div class="death-time" id="death-time">TIME OF DEATH: 03:14 AM</div>
+        <button id="btn-retry" class="btn-retry">REWIND TAPE (TRY AGAIN)</button>
+      </div>
+    </div>
+
+    <!-- Victory / Dawn Screen -->
+    <div id="victory-modal" class="victory-modal">
+      <div class="victory-card">
+        <div class="victory-time">03:33:00 AM</div>
+        <div class="victory-title">SURVIVED THE ANOMALY</div>
+        <p class="victory-desc">The morning siren sounded. The room went silent. Whatever was outside your door retreated back into the void.</p>
+        <button id="btn-restart" class="btn-retry">REPLAY TAPE</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

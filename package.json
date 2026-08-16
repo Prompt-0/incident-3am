@@ -1,0 +1,20 @@
+{
+  "name": "incident-3am",
+  "version": "1.0.0",
+  "description": "INCIDENT: 3:07 AM — Found-Footage 3D Psychological Horror Game",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --port 3005",
+    "build": "tsc && vite build",
+    "preview": "vite preview --host 0.0.0.0 --port 3005"
+  },
+  "dependencies": {
+    "three": "^0.170.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/three": "^0.170.0",
+    "typescript": "^5.7.0",
+    "vite": "^6.0.0"
+  }
+}

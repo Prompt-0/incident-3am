@@ -1,0 +1,674 @@
+/* ==========================================================================
+   INCIDENT: 3:07 AM — Master Stylesheet
+   Found Footage / Analog Horror Web Experience
+   ========================================================================== */
+
+:root {
+  --font-vhs: 'Share Tech Mono', 'VT323', monospace;
+  --font-horror: 'VT323', cursive, monospace;
+  --font-ui: 'Inter', sans-serif;
+  
+  --color-vhs-green: #2eff7b;
+  --color-vhs-red: #ff2a2a;
+  --color-vhs-amber: #ffaa00;
+  --color-vhs-white: #e6e6e6;
+  --color-nv-bg: rgba(5, 30, 10, 0.4);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #000;
+  color: #fff;
+  font-family: var(--font-vhs);
+}
+
+#game-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+#game-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 1;
+}
+
+/* ── VHS Scanlines & CRT Distortion ── */
+.vhs-scanlines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.35) 50%
+  ), linear-gradient(
+    90deg,
+    rgba(255, 0, 0, 0.03),
+    rgba(0, 255, 0, 0.01),
+    rgba(0, 0, 255, 0.03)
+  );
+  background-size: 100% 4px, 6px 100%;
+  opacity: 0.85;
+}
+
+.vhs-noise {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 6;
+  opacity: 0.08;
+  background-image: radial-gradient(circle, #fff 10%, transparent 11%);
+  background-size: 3px 3px;
+  animation: noiseJitter 0.15s steps(2) infinite;
+}
+
+@keyframes noiseJitter {
+  0% { transform: translate(0, 0); }
+  50% { transform: translate(-1px, 2px); }
+  100% { transform: translate(2px, -1px); }
+}
+
+.vhs-glitch-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 7;
+  mix-blend-mode: color-dodge;
+  opacity: 0;
+  transition: opacity 0.05s ease;
+  background: rgba(255, 0, 40, 0.15);
+}
+
+.vhs-glitch-layer.active {
+  opacity: 0.8;
+  animation: glitchFlash 0.2s steps(3) infinite;
+}
+
+@keyframes glitchFlash {
+  0% { transform: translateY(-5px) skewX(2deg); }
+  50% { transform: translateY(4px) skewX(-2deg); filter: invert(0.2); }
+  100% { transform: translateY(0) skewX(0); }
+}
+
+/* ── Frost Overlay for "Don't Turn Around" ── */
+.frost-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 8;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  box-shadow: inset 0 0 100px 40px rgba(160, 220, 255, 0.35);
+  background: radial-gradient(circle, transparent 60%, rgba(200, 235, 255, 0.2) 100%);
+}
+
+.frost-overlay.active {
+  opacity: 1;
+}
+
+/* ── Camcorder Viewfinder HUD ── */
+.camcorder-hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 30px 40px;
+  color: var(--color-vhs-white);
+  text-shadow: 0 0 6px rgba(0, 0, 0, 0.9), 0 0 3px #fff;
+  transition: filter 0.3s ease, color 0.3s ease;
+}
+
+/* Night Vision Mode Modifier */
+.camcorder-hud.night-vision {
+  color: var(--color-vhs-green);
+  text-shadow: 0 0 8px rgba(46, 255, 123, 0.8);
+}
+
+.hud-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.3rem;
+  letter-spacing: 2px;
+}
+
+.rec-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: bold;
+}
+
+.rec-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background-color: var(--color-vhs-red);
+  box-shadow: 0 0 10px var(--color-vhs-red);
+  animation: recBlink 1s step-start infinite;
+}
+
+@keyframes recBlink {
+  50% { opacity: 0.2; }
+}
+
+.timecode {
+  font-size: 1.8rem;
+  letter-spacing: 3px;
+  font-family: var(--font-horror);
+  color: #ffdd66;
+}
+
+.battery-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+}
+
+.battery-shell {
+  width: 38px;
+  height: 18px;
+  border: 2px solid currentColor;
+  padding: 2px;
+  border-radius: 2px;
+  position: relative;
+}
+
+.battery-shell::after {
+  content: '';
+  position: absolute;
+  right: -5px;
+  top: 4px;
+  width: 3px;
+  height: 6px;
+  background-color: currentColor;
+}
+
+.battery-fill {
+  width: 100%;
+  height: 100%;
+  background-color: currentColor;
+  transition: width 0.3s ease;
+}
+
+/* ── HUD Center Reticle ── */
+.hud-center {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.cam-crosshair {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  opacity: 0.6;
+}
+
+.bracket {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-color: currentColor;
+  border-style: solid;
+}
+
+.bracket.top-left {
+  top: 0; left: 0;
+  border-width: 2px 0 0 2px;
+}
+.bracket.top-right {
+  top: 0; right: 0;
+  border-width: 2px 2px 0 0;
+}
+.bracket.bottom-left {
+  bottom: 0; left: 0;
+  border-width: 0 0 2px 2px;
+}
+.bracket.bottom-right {
+  bottom: 0; right: 0;
+  border-width: 0 2px 2px 0;
+}
+
+.center-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  background-color: currentColor;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+}
+
+.night-vision-tag {
+  margin-top: 15px;
+  font-size: 0.95rem;
+  letter-spacing: 3px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 4px 12px;
+  border-radius: 3px;
+  display: none;
+}
+
+.night-vision .night-vision-tag {
+  display: block;
+  animation: pulseTag 2s ease-in-out infinite;
+}
+
+@keyframes pulseTag {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ── HUD Bottom ── */
+.hud-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  font-size: 1.1rem;
+  letter-spacing: 1px;
+}
+
+.bpm-meter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 6px 14px;
+  border-left: 3px solid var(--color-vhs-red);
+}
+
+.heart-icon {
+  color: var(--color-vhs-red);
+  animation: heartPulse 0.8s ease-in-out infinite;
+}
+
+@keyframes heartPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+}
+
+.bpm-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #ff5555;
+}
+
+.objective-tracker {
+  background: rgba(0, 0, 0, 0.7);
+  padding: 8px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  text-align: center;
+}
+
+.obj-label {
+  color: #ffaa00;
+  font-weight: bold;
+  margin-right: 6px;
+}
+
+.vhs-format {
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+
+/* ── Warning Banner ── */
+.warning-banner {
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(180, 0, 0, 0.85);
+  color: #fff;
+  padding: 12px 30px;
+  border: 2px solid #ff4444;
+  font-size: 1.6rem;
+  letter-spacing: 3px;
+  font-weight: bold;
+  box-shadow: 0 0 30px rgba(255, 0, 0, 0.7);
+  display: none;
+  align-items: center;
+  gap: 12px;
+  animation: bannerFlash 0.4s ease-in-out infinite;
+}
+
+@keyframes bannerFlash {
+  0%, 100% { transform: translateX(-50%) scale(1); }
+  50% { transform: translateX(-50%) scale(1.05); }
+}
+
+.warning-banner.active {
+  display: flex;
+}
+
+/* ── Interaction Prompt ── */
+.interact-prompt {
+  position: absolute;
+  bottom: 25%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  padding: 8px 20px;
+  border-radius: 4px;
+  font-size: 1.2rem;
+  display: none;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: 1px;
+}
+
+.interact-key {
+  color: #ffcc00;
+  font-weight: bold;
+}
+
+.interact-prompt.active {
+  display: flex;
+}
+
+/* ── Fisheye Peephole Overlay Mode ── */
+.peephole-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 12;
+  pointer-events: none;
+  display: none;
+}
+
+.peephole-overlay.active {
+  display: block;
+}
+
+.peephole-vignette {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(
+    circle at center,
+    transparent 30%,
+    rgba(0, 0, 0, 0.8) 45%,
+    rgba(0, 0, 0, 0.98) 55%,
+    #000 70%
+  );
+  box-shadow: inset 0 0 100px #000;
+}
+
+.peephole-lens-reflection {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 50vh;
+  height: 50vh;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.15);
+  box-shadow: inset 0 0 40px rgba(255, 255, 255, 0.1);
+  pointer-events: none;
+}
+
+.peephole-instructions {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.2rem;
+  letter-spacing: 2px;
+  color: #ffcc00;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 6px 18px;
+  border: 1px solid #ffcc00;
+}
+
+/* ── Subtitle Box ── */
+.subtitle-box {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 15;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.85);
+  padding: 10px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 1.3rem;
+  letter-spacing: 2px;
+  color: #fff;
+  text-align: center;
+  max-width: 80%;
+  display: none;
+}
+
+.subtitle-box.active {
+  display: block;
+}
+
+.subtitle-box.creepy {
+  color: #ff3333;
+  border-color: #880000;
+  font-family: var(--font-horror);
+  font-size: 1.6rem;
+}
+
+.subtitle-box.eas {
+  color: #ffee33;
+  border-color: #ffee33;
+  font-weight: bold;
+}
+
+/* ── Jumpscare Face Flash ── */
+.jumpscare-flash {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 20;
+  pointer-events: none;
+  display: none;
+  background-color: #000;
+  align-items: center;
+  justify-content: center;
+}
+
+.jumpscare-face {
+  width: 100vw;
+  height: 100vh;
+  background-position: center;
+  background-size: cover;
+  filter: contrast(300%) brightness(150%) hue-rotate(330deg);
+  animation: scareShake 0.05s infinite;
+}
+
+@keyframes scareShake {
+  0% { transform: translate(10px, -15px) scale(1.1); }
+  50% { transform: translate(-12px, 8px) scale(1.15); }
+  100% { transform: translate(6px, -10px) scale(1.08); }
+}
+
+/* ── Modals & Overlays ── */
+.start-modal, .death-modal, .victory-modal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 25;
+  background: rgba(0, 0, 0, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-card, .death-card, .victory-card {
+  max-width: 680px;
+  width: 100%;
+  background: #080808;
+  border: 2px solid #333;
+  box-shadow: 0 0 50px rgba(255, 0, 0, 0.2);
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  text-align: center;
+}
+
+.game-tag {
+  font-size: 0.9rem;
+  letter-spacing: 4px;
+  color: #ff3333;
+}
+
+.game-title {
+  font-family: var(--font-horror);
+  font-size: 3.2rem;
+  letter-spacing: 4px;
+  color: #ff2200;
+  text-shadow: 0 0 20px rgba(255, 34, 0, 0.8);
+}
+
+.game-synopsis {
+  font-size: 1.15rem;
+  line-height: 1.6;
+  color: #ccc;
+}
+
+.rules-card {
+  background: #111;
+  border-left: 4px solid #ff3333;
+  padding: 15px 20px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 0.95rem;
+  color: #bbb;
+}
+
+.controls-overview {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+  font-size: 0.95rem;
+  background: #0d0d0d;
+  padding: 12px;
+  border: 1px dashed #444;
+}
+
+.controls-overview span strong {
+  color: #ffcc00;
+}
+
+.btn-start, .btn-retry {
+  background: #8b0000;
+  color: #fff;
+  border: 1px solid #ff4444;
+  padding: 16px 28px;
+  font-family: var(--font-vhs);
+  font-size: 1.3rem;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+}
+
+.btn-start:hover, .btn-retry:hover {
+  background: #ff1100;
+  box-shadow: 0 0 30px rgba(255, 34, 0, 0.9);
+  transform: scale(1.02);
+}
+
+/* ── Death Screen ── */
+.death-modal {
+  display: none;
+  background: #000;
+}
+
+.death-title {
+  font-size: 2.2rem;
+  color: #ff0000;
+  font-family: var(--font-horror);
+  letter-spacing: 3px;
+  animation: recBlink 0.6s infinite;
+}
+
+.death-cause {
+  font-size: 1.4rem;
+  color: #aaa;
+  letter-spacing: 2px;
+}
+
+.death-time {
+  font-size: 1.1rem;
+  color: #666;
+}
+
+/* ── Victory Screen ── */
+.victory-modal {
+  display: none;
+  background: #040404;
+}
+
+.victory-time {
+  font-size: 2.5rem;
+  color: #ffea00;
+  font-family: var(--font-horror);
+}
+
+.victory-title {
+  font-size: 2.4rem;
+  color: #2eff7b;
+  letter-spacing: 3px;
+}
+
+.victory-desc {
+  font-size: 1.15rem;
+  line-height: 1.6;
+  color: #ccc;
+}
