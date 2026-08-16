@@ -46,6 +46,15 @@
         <div class="night-vision-tag" id="night-vision-tag">NIGHT VISION [IR ON]</div>
       </div>
 
+      <!-- Laptop / Touchpad Quick Action Control Bar -->
+      <div class="touchpad-bar" id="touchpad-bar">
+        <button class="action-btn" id="btn-action-light" title="Toggle Flashlight [F]">🔦 LIGHT [F]</button>
+        <button class="action-btn" id="btn-action-nv" title="Toggle Night Vision [V]">📹 NIGHT VISION [V]</button>
+        <button class="action-btn" id="btn-action-interact" title="Interact [E]">✋ INTERACT [E]</button>
+        <button class="action-btn" id="btn-action-crouch" title="Toggle Crouch [C]">🧎 CROUCH [C]</button>
+        <button class="action-btn" id="btn-action-bright" title="Cycle Brightness [B]">☀️ BRIGHTNESS [B]</button>
+      </div>
+
       <!-- VHS Footer Telemetry -->
       <div class="hud-bottom">
         <div class="bpm-meter">
@@ -78,7 +87,7 @@
     <div id="peephole-overlay" class="peephole-overlay">
       <div class="peephole-vignette"></div>
       <div class="peephole-lens-reflection"></div>
-      <div class="peephole-instructions">PRESS [E] OR [ESC] TO STEP BACK FROM DOOR</div>
+      <div class="peephole-instructions">PRESS [E], [ESC], OR CLICK STEP BACK TO EXIT PEEPHOLE</div>
     </div>
 
     <!-- Subtitles / EBS Broadcast Subtitle -->
@@ -99,24 +108,26 @@
         <div class="game-tag">TAPE ARCHIVE // FILE #307</div>
         <h1 class="game-title">INCIDENT: 3:07 AM</h1>
         <p class="game-synopsis">
-          You are trapped inside Room 404 during a midnight paranormal containment breach.<br />
+          Trapped inside Room 404 during a midnight paranormal containment breach.<br />
           Survive from <strong>03:00 AM to 03:33 AM</strong>.
         </p>
         
         <div class="rules-card">
-          <div class="rule-item">🔴 <strong>Emergency Broadcast:</strong> Keep lights off when anomalies prowl.</div>
-          <div class="rule-item">👁️ <strong>The Peephole:</strong> Inspect door knocks, but be ready to step back and lock the deadbolt.</div>
+          <div class="rule-item">💡 <strong>Handheld Light [F] & Brightness [B]:</strong> Use light to search the room; turn off when hiding.</div>
+          <div class="rule-item">👁️ <strong>The Peephole [E]:</strong> Inspect door knocks, then barricade with the iron pipe.</div>
           <div class="rule-item">❄️ <strong>Cold Breath:</strong> If you feel breathing on your neck, <em>DO NOT MOVE OR TURN AROUND</em>.</div>
-          <div class="rule-item">📹 <strong>Night Vision [V / F]:</strong> Some entities are invisible to the naked eye.</div>
+          <div class="rule-item">📹 <strong>Night Vision [V / N]:</strong> Some entities are invisible to the naked eye.</div>
         </div>
 
         <div class="controls-overview">
           <span><strong>WASD</strong> Move</span>
-          <span><strong>Mouse</strong> Look</span>
+          <span><strong>Mouse / Arrow Keys / Drag</strong> Look</span>
           <span><strong>Shift</strong> Sprint</span>
-          <span><strong>C / Ctrl</strong> Crouch / Muffle</span>
-          <span><strong>E</strong> Interact / Peephole</span>
-          <span><strong>F / V</strong> Camcorder Night Vision</span>
+          <span><strong>C / Ctrl</strong> Crouch</span>
+          <span><strong>F</strong> Light</span>
+          <span><strong>V</strong> Night Vision</span>
+          <span><strong>E</strong> Interact</span>
+          <span><strong>B</strong> Brightness</span>
         </div>
 
         <button id="btn-start-game" class="btn-start">▶ PLAY TAPE (WEAR HEADPHONES)</button>

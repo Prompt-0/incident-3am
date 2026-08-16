@@ -1,6 +1,6 @@
 /**
  * INCIDENT: 3:07 AM — Master Game Coordinator & Timeline Engine
- * Orchestrates Three.js scene, rendering loop, escalating survival phases, audio, and jump scares.
+ * Orchestrates Three.js scene, crisp horror lighting, laptop/touchpad controls, audio, and jump scares.
  */
 
 import * as THREE from 'three';
@@ -28,13 +28,16 @@ export class IncidentGame {
   public audio: AudioEngine;
   public synth: SoundSynthesizer;
 
+  /* Brightness / Exposure Settings */
+  private brightnessLevels: number[] = [1.0, 1.45, 1.9, 2.4];
+  private brightnessIndex: number = 1;
+
   /* Timeline & Game Loop State */
   public isPlaying: boolean = false;
   public isGameOver: boolean = false;
   public isVictory: boolean = false;
   
-  // Game clock: starts at 3:00:00 (180.0 mins), ends at 3:33:00 (213.0 mins)
-  // Total real-time duration ~240 seconds (4 minutes of intense gameplay)
+  // Game clock: starts at 3:00:00, ends at 3:33:00 (Total real-time duration ~210s)
   private elapsedSeconds: number = 0;
   private readonly TOTAL_GAME_SECONDS: number = 210; // 3.5 minutes
   private inGameMinutes: number = 0; // 0 to 33
@@ -57,13 +60,15 @@ export class IncidentGame {
   private constructor() {
     this.canvas = document.getElementById('game-canvas') as HTMLCanvasElement;
     this.scene = new THREE.Scene();
-    this.scene.fog = new THREE.FogExp2(0x020202, 0.08);
+    
+    // Atmospheric low-density fog (lets player see room clearly)
+    this.scene.fog = new THREE.FogExp2(0x0c0b10, 0.022);
 
     this.camera = new THREE.PerspectiveCamera(
       75,
       window.innerWidth / window.innerHeight,
       0.1,
-      50
+      60
     );
 
     this.renderer = new THREE.WebGLRenderer({
@@ -75,7 +80,7 @@ export class IncidentGame {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.shadowMap.enabled = true;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 0.9;
+    this.renderer.toneMappingExposure = this.brightnessLevels[this.brightnessIndex]; // 1.45 default exposure
 
     this.ui = UIManager.getInstance();
     this.audio = AudioEngine.getInstance();
@@ -103,11 +108,19 @@ export class IncidentGame {
     this.stalker = new Stalker();
     this.scene.add(this.stalker.mesh);
 
-    // 4. Setup UI Listeners
+    // 4. Setup UI Listeners & Laptop Controls
     this.setupUIListeners();
 
     // 5. Start Render Loop
     this.render();
+  }
+
+  public cycleBrightness(): void {
+    this.brightnessIndex = (this.brightnessIndex + 1) % this.brightnessLevels.length;
+    const level = this.brightnessLevels[this.brightnessIndex];
+    this.renderer.toneMappingExposure = level;
+    const labels = ['NORMAL (1.0x)', 'BRIGHT (1.45x)', 'VERY BRIGHT (1.9x)', 'MAXIMUM (2.4x)'];
+    this.ui.showSubtitle(`☀️ BRIGHTNESS: ${labels[this.brightnessIndex]}`, 'normal', 2500);
   }
 
   private setupUIListeners(): void {
@@ -128,13 +141,61 @@ export class IncidentGame {
       window.location.reload();
     });
 
-    // Night vision toggle on keypress (F or V)
+    // ── Laptop & Touchpad Quick Action Buttons ──
+    const btnLight = document.getElementById('btn-action-light');
+    btnLight?.addEventListener('click', () => {
+      if (!this.isPlaying || this.isGameOver) return;
+      const on = this.camcorder.toggleFlashlight();
+      this.synth.playDoorLockBarricade();
+      this.ui.showSubtitle(on ? '💡 FLASHLIGHT ON' : '💡 FLASHLIGHT OFF', 'normal', 1500);
+    });
+
+    const btnNV = document.getElementById('btn-action-nv');
+    btnNV?.addEventListener('click', () => {
+      if (!this.isPlaying || this.isGameOver) return;
+      const isNightVision = this.camcorder.toggleNightVision();
+      this.ui.setNightVisionMode(isNightVision);
+      this.ui.showSubtitle(isNightVision ? '📹 NIGHT VISION [IR] ACTIVE' : '📹 NIGHT VISION OFF', 'normal', 1500);
+    });
+
+    const btnInteract = document.getElementById('btn-action-interact');
+    btnInteract?.addEventListener('click', () => {
+      if (!this.isPlaying || this.isGameOver) return;
+      this.handlePlayerInteraction();
+    });
+
+    const btnCrouch = document.getElementById('btn-action-crouch');
+    btnCrouch?.addEventListener('click', () => {
+      if (!this.isPlaying || this.isGameOver) return;
+      this.player.isCrouching = !this.player.isCrouching;
+      this.ui.showSubtitle(this.player.isCrouching ? '🧎 CROUCHING (SILENT)' : '🚶 STANDING', 'normal', 1500);
+    });
+
+    const btnBright = document.getElementById('btn-action-bright');
+    btnBright?.addEventListener('click', () => {
+      this.cycleBrightness();
+    });
+
+    // ── Keyboard Controls ──
     document.addEventListener('keydown', (e) => {
       if (!this.isPlaying || this.isGameOver) return;
 
-      if (e.code === 'KeyF' || e.code === 'KeyV') {
+      // Flashlight Toggle (F)
+      if (e.code === 'KeyF') {
+        const on = this.camcorder.toggleFlashlight();
+        this.ui.showSubtitle(on ? '💡 FLASHLIGHT ON' : '💡 FLASHLIGHT OFF', 'normal', 1500);
+      }
+
+      // Night Vision Toggle (V or N)
+      if (e.code === 'KeyV' || e.code === 'KeyN') {
         const isNightVision = this.camcorder.toggleNightVision();
         this.ui.setNightVisionMode(isNightVision);
+        this.ui.showSubtitle(isNightVision ? '📹 NIGHT VISION [IR] ACTIVE' : '📹 NIGHT VISION OFF', 'normal', 1500);
+      }
+
+      // Brightness Cycle (B)
+      if (e.code === 'KeyB') {
+        this.cycleBrightness();
       }
 
       // Interaction Key (E)
@@ -164,7 +225,7 @@ export class IncidentGame {
         // Barricade door
         this.world.isDoorBarricaded = true;
         this.synth.playDoorLockBarricade();
-        this.ui.showSubtitle('FRONT DOOR SECURED WITH IRON BAR.', 'normal', 3000);
+        this.ui.showSubtitle('FRONT DOOR SECURED WITH HEAVY IRON BAR.', 'normal', 3000);
         this.ui.setObjective('Wait for the anomaly to pass.');
       } else {
         // Look through peephole
@@ -190,10 +251,10 @@ export class IncidentGame {
     if (distToBreaker < 1.8 && !this.world.isPowerRestored) {
       this.world.isPowerRestored = true;
       this.world.breakerSwitches = [true, true, true, true];
-      this.world.ceilingLight.color.setHex(0xffaa44);
-      this.world.ceilingLight.intensity = 0.5;
+      this.world.ceilingLight.color.setHex(0xffbb66);
+      this.world.ceilingLight.intensity = 1.0;
       this.synth.playDoorLockBarricade();
-      this.ui.showSubtitle('EMERGENCY CIRCUITS ACTIVE. LIGHTS RESTORED TO MINIMAL.', 'normal', 3000);
+      this.ui.showSubtitle('EMERGENCY CIRCUITS ACTIVE. ROOM ILLUMINATION RESTORED.', 'normal', 3000);
       return;
     }
 
@@ -204,7 +265,7 @@ export class IncidentGame {
       const pipeMesh = this.world.roomMesh.getObjectByName('pickup_iron_pipe');
       if (pipeMesh) pipeMesh.visible = false;
       this.synth.playDoorLockBarricade();
-      this.ui.showSubtitle('ACQUIRED HEAVY IRON PIPE. USE IT TO BARRICADE THE FRONT DOOR.', 'normal', 4000);
+      this.ui.showSubtitle('ACQUIRED HEAVY IRON PIPE. GO BARRICADE THE FRONT DOOR [E].', 'normal', 4000);
       this.ui.setObjective('Barricade front door [E]');
       return;
     }
@@ -269,7 +330,7 @@ export class IncidentGame {
 
   private updateInteractionPrompts(): void {
     if (this.player.isInspectingPeephole) {
-      this.ui.showInteractPrompt('Step Back [E]', true);
+      this.ui.showInteractPrompt('Step Back [E] / [ESC]', true);
       return;
     }
 
@@ -305,10 +366,10 @@ export class IncidentGame {
     // ── Phase 1: 03:00 - 03:07 AM (Blackout & Breaker) ──
     if (this.inGameMinutes >= 1 && !this.phase1Triggered) {
       this.phase1Triggered = true;
-      this.world.ceilingLight.intensity = 0.05;
+      this.world.ceilingLight.intensity = 0.4; // Soft emergency amber
       this.audio.setTension(0.3);
       this.ui.setObjective('Investigate Room 404 / Find the Iron Pipe on the desk');
-      this.ui.showSubtitle('The power flickered out. Keep calm and search the room.', 'normal', 4000);
+      this.ui.showSubtitle('The main grid failed. Use your handheld light [F] and search the room.', 'normal', 4000);
     }
 
     // ── Phase 2: 03:07 - 03:15 AM (Violent Door Knocks) ──
@@ -318,7 +379,7 @@ export class IncidentGame {
       this.synth.playViolentDoorKnock();
       this.ui.triggerGlitch(600);
       this.ui.showSubtitle('[ AGGRESSIVE POUNDING ON FRONT DOOR ]', 'creepy', 4000);
-      this.ui.setObjective('Inspect front door peephole or Barricade it!');
+      this.ui.setObjective('Inspect front door peephole [E] or Barricade it!');
     }
 
     // ── Phase 3: 03:15 - 03:22 AM ("Don't Turn Around" Cold Breath) ──
@@ -347,8 +408,8 @@ export class IncidentGame {
         this.ui.setFrostOverlay(false);
         this.ui.showWarning('', false);
         this.synth.playVentScratch();
-        this.ui.showSubtitle('The entity retreated into the ceiling vent...', 'normal', 4000);
-        this.ui.setObjective('Prepare for incursion. Toggle Night Vision [F/V]');
+        this.ui.showSubtitle('The entity crawled into the ceiling vent above...', 'normal', 4000);
+        this.ui.setObjective('Prepare for incursion. Toggle Night Vision [V / F]');
       }
     }
 
@@ -359,8 +420,8 @@ export class IncidentGame {
       this.stalker.mesh.position.set(0, 0, 0);
       this.stalker.isVisibleInNormalLight = false; // Only visible in Night Vision!
       this.synth.playFootstep();
-      this.ui.showSubtitle('Heavy footsteps echo in the room... but no one is there. USE NIGHT VISION [F].', 'creepy', 5000);
-      this.ui.setObjective('Track the anomaly with Night Vision [F/V]');
+      this.ui.showSubtitle('Heavy footsteps echo in the room... but no one is visible. USE NIGHT VISION [V].', 'creepy', 5000);
+      this.ui.setObjective('Track the anomaly with Night Vision [V]');
     }
 
     // If in Phase 4 and player gets too close without night vision
@@ -416,7 +477,7 @@ export class IncidentGame {
     if (this.isVictory) return;
     this.isVictory = true;
     this.world.ceilingLight.color.setHex(0xffffff);
-    this.world.ceilingLight.intensity = 2.0;
+    this.world.ceilingLight.intensity = 2.4;
     this.ui.showWarning('', false);
     this.ui.showVictoryScreen();
   }

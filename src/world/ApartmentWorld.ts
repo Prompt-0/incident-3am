@@ -346,23 +346,23 @@ export class ApartmentWorld {
    * Set up dramatic atmospheric lights.
    */
   private setupLighting(): void {
-    // Ambient baseline (very dark)
-    this.ambientLight = new THREE.AmbientLight(0x0a0a0c, 0.2);
+    // Ambient baseline (Warm atmospheric visibility so room is clearly discernable)
+    this.ambientLight = new THREE.AmbientLight(0x403c38, 0.75);
     this.scene.add(this.ambientLight);
 
-    // Main Overhead Room Lamp
-    this.ceilingLight = new THREE.PointLight(0xffddaa, 0.8, 9);
+    // Main Overhead Room Lamp (Warm Vintage Pendant Light)
+    this.ceilingLight = new THREE.PointLight(0xffeedd, 1.8, 14);
     this.ceilingLight.position.set(0, 2.9, 0);
     this.ceilingLight.castShadow = true;
     this.scene.add(this.ceilingLight);
 
-    // TV Screen Light (Flickers blue-white)
-    this.tvLight = new THREE.PointLight(0x4488ff, 1.2, 6);
+    // TV Screen Light (Vibrant Blue Ambient Glow)
+    this.tvLight = new THREE.PointLight(0x5599ff, 1.8, 8);
     this.tvLight.position.set(3.0, 1.0, -4.0);
     this.scene.add(this.tvLight);
 
-    // Distant Hallway Light
-    this.corridorLight = new THREE.PointLight(0xff2200, 0.6, 15);
+    // Distant Hallway Light (Eerie Red-Amber Pulse)
+    this.corridorLight = new THREE.PointLight(0xff4422, 1.4, 20);
     this.corridorLight.position.set(0, 2.8, -16);
     this.scene.add(this.corridorLight);
   }

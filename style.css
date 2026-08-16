@@ -346,6 +346,51 @@ html, body {
   margin-right: 6px;
 }
 
+/* ── Laptop / Touchpad Quick Action Bar ── */
+.touchpad-bar {
+  position: absolute;
+  top: 75px;
+  right: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: auto;
+  z-index: 15;
+}
+
+.action-btn {
+  background: rgba(12, 12, 14, 0.85);
+  color: var(--color-vhs-white);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  font-family: var(--font-vhs);
+  font-size: 0.92rem;
+  padding: 8px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  text-shadow: 0 0 4px #000;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  backdrop-filter: blur(4px);
+}
+
+.action-btn:hover, .action-btn:active {
+  background: rgba(30, 30, 35, 0.95);
+  border-color: #ffaa00;
+  color: #ffdd66;
+  transform: translateX(-4px);
+  box-shadow: 0 0 12px rgba(255, 170, 0, 0.4);
+}
+
+.action-btn.active {
+  background: rgba(46, 255, 123, 0.2);
+  border-color: var(--color-vhs-green);
+  color: var(--color-vhs-green);
+  box-shadow: 0 0 10px rgba(46, 255, 123, 0.4);
+}
+
 .vhs-format {
   font-size: 0.9rem;
   opacity: 0.7;
